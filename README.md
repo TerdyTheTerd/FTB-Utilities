@@ -1,1 +1,5 @@
 # FTB Utilities [![](http://cf.way2muchnoise.eu/ftb-utilities.svg) ![](https://cf.way2muchnoise.eu/packs/ftb-utilities.svg) ![](http://cf.way2muchnoise.eu/versions/ftb-utilities.svg)](https://www.curseforge.com/minecraft/mc-mods/ftb-utilities)
+A custom fork of FTBUtilities that aims to enchance the protection system to better serve the modpack, creating a more robust and customizable experience for players. Intitial work will be on extending the protection system for fine tuning of each claim. Afterwords intergration will proceed with other key mods such as Clans (a custom fork that only contains a modified raiding system) and HQM (sorry FTBQuest, HQM is simply better). If during development any changes are made that would otherwise address issues on the main project, they will be submitted as PR's, otherwise the changes made are mainly custom tailored to our unique needs.
+
+## Credits
+All credit remains with the FTB Team for their amazing work over the years
