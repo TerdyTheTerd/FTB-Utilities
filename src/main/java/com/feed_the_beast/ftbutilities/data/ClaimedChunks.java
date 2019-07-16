@@ -20,6 +20,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.server.permission.PermissionAPI;
 
 import javax.annotation.Nullable;
+
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -322,6 +324,15 @@ public class ClaimedChunks
 		}
 
 		return player.hasTeam() && chunk.getTeam().equalsTeam(player.team) || perm.isEmpty() || player.hasPermission(perm);
+	}
+	
+	public static boolean canPlayerEnter(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEntryStatus()));
+		}
 	}
 
 	public ClaimResult claimChunk(ForgePlayer player, ChunkDimPos pos)

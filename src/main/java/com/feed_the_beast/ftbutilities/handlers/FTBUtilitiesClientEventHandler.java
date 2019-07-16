@@ -169,4 +169,10 @@ public class FTBUtilitiesClientEventHandler
 			}
 		}
 	}
+	
+	// TODO - Implement client side sync for claimed chunks, then we can check and cancel MovementInput for smooth entry cancellation, rather than updating PlayerPosition and rubberbanding
+	//@SubscribeEvent
+	//public static void onMovementInput(MovementInput event) {
+		
+	//}
 }
