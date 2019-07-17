@@ -360,17 +360,42 @@ public class FTBUtilitiesPlayerEventHandler
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onItemPickup(EntityItemPickupEvent event) {
 		//TODO - Implement
+		if(!ClaimedChunks.canPlayerPickupItems(event.getEntityPlayer(), new ChunkDimPos(event.getEntityPlayer().getPosition().getX(), event.getEntityPlayer().getPosition().getZ(), event.getEntityPlayer().dimension)))
+		{
+			event.setCanceled(true);
+		}
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onItemToss(ItemTossEvent event) {
 		//TODO - Implement
+		if(!ClaimedChunks.canPlayerDropItems(event.getPlayer(), new ChunkDimPos(event.getPlayer().getPosition().getX(), event.getPlayer().getPosition().getZ(), event.getPlayer().dimension))) {
+			event.setCanceled(true);
+		}
 	}
 	
+	//Handle all laser events, check and cancel the explosion, damage, and remove the projectile
 	@SubscribeEvent
 	public void onLaserEvent(ic2.api.event.LaserEvent event) {
-		//TODO - Implement
+		if(event instanceof ic2.api.event.LaserEvent.LaserShootEvent) {
+			if(ClaimedChunks.blockLaserUse((EntityPlayer) event.owner, event.owner.getPosition())) {
+				event.setCanceled(true);
+			}
+		} else {
+			if(ClaimedChunks.blockLaserUse((EntityPlayer) event.owner, event.lasershot.getPosition())) {
+				event.setCanceled(true);
+			}
+		}
 	}
+	
+	//This might not be neccesary, however im sure we need to handle the radation system
+	@SubscribeEvent
+	public void onExplosionEvent(ic2.api.event.ExplosionEvent event) {
+			if(ClaimedChunks.blockExplosives((EntityPlayer) event.igniter, new ChunkDimPos(event.entity.getPosition(), event.igniter.dimension))) {
+				event.setCanceled(true);
+			}
+	}
+	
 	
 	//TODO - Check on teleport for entering claimed land, in the case of homes or tp's
 	

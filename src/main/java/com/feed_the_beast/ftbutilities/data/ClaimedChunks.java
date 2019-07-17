@@ -278,6 +278,18 @@ public class ClaimedChunks
 				&& !FTBUtilitiesPermissions.hasBlockEditingPermission(player, state.getBlock())
 				&& !chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEditBlocksStatus());
 	}
+	
+	public static boolean blockLaserUse(EntityPlayer player, BlockPos pos) {
+		if (!isActive() || player.world == null || !(player instanceof EntityPlayerMP))
+		{
+			return false;
+		}
+		
+		ClaimedChunk chunk = instance.getChunk(new ChunkDimPos(pos, player.dimension));
+		
+		return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEditBlocksStatus()));
+	}
+
 
 	public static boolean blockBlockInteractions(EntityPlayer player, BlockPos pos, @Nullable IBlockState state)
 	{
@@ -309,6 +321,11 @@ public class ClaimedChunks
 				&& !FTBUtilitiesPermissions.hasItemUsePermission(player, player.getHeldItem(hand).getItem())
 				&& !chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getUseItemsStatus());
 	}
+	
+	public static boolean blockExplosives(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		return !chunk.hasExplosions();
+	}
 
 	public boolean canPlayerModify(ForgePlayer player, ChunkDimPos pos, String perm)
 	{
@@ -335,6 +352,24 @@ public class ClaimedChunks
 		}
 	}
 
+	public static boolean canPlayerDropItems(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getDropItemStatus()));
+		}
+	}
+	
+	public static boolean canPlayerPickupItems(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getPickupItemStatus()));
+		}
+	}
+	
 	public ClaimResult claimChunk(ForgePlayer player, ChunkDimPos pos)
 	{
 		if (!player.hasTeam())
@@ -464,4 +499,5 @@ public class ClaimedChunks
 		chunk.setLoaded(false);
 		return true;
 	}
+
 }
