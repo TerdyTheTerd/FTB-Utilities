@@ -20,6 +20,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.server.permission.PermissionAPI;
 
 import javax.annotation.Nullable;
+
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -276,6 +278,18 @@ public class ClaimedChunks
 				&& !FTBUtilitiesPermissions.hasBlockEditingPermission(player, state.getBlock())
 				&& !chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEditBlocksStatus());
 	}
+	
+	public static boolean blockLaserUse(EntityPlayer player, BlockPos pos) {
+		if (!isActive() || player.world == null || !(player instanceof EntityPlayerMP))
+		{
+			return false;
+		}
+		
+		ClaimedChunk chunk = instance.getChunk(new ChunkDimPos(pos, player.dimension));
+		
+		return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEditBlocksStatus()));
+	}
+
 
 	public static boolean blockBlockInteractions(EntityPlayer player, BlockPos pos, @Nullable IBlockState state)
 	{
@@ -307,6 +321,11 @@ public class ClaimedChunks
 				&& !FTBUtilitiesPermissions.hasItemUsePermission(player, player.getHeldItem(hand).getItem())
 				&& !chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getUseItemsStatus());
 	}
+	
+	public static boolean blockExplosives(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		return !chunk.hasExplosions();
+	}
 
 	public boolean canPlayerModify(ForgePlayer player, ChunkDimPos pos, String perm)
 	{
@@ -323,7 +342,34 @@ public class ClaimedChunks
 
 		return player.hasTeam() && chunk.getTeam().equalsTeam(player.team) || perm.isEmpty() || player.hasPermission(perm);
 	}
+	
+	public static boolean canPlayerEnter(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getEntryStatus()));
+		}
+	}
 
+	public static boolean canPlayerDropItems(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getDropItemStatus()));
+		}
+	}
+	
+	public static boolean canPlayerPickupItems(EntityPlayer player, ChunkDimPos pos) {
+		ClaimedChunk chunk = instance.getChunk(pos);
+		if(chunk == null) {
+			return true;
+		} else {
+			return (chunk.getTeam().hasStatus(instance.universe.getPlayer(player), chunk.getData().getPickupItemStatus()));
+		}
+	}
+	
 	public ClaimResult claimChunk(ForgePlayer player, ChunkDimPos pos)
 	{
 		return claimChunk(player, pos, true);
@@ -458,4 +504,5 @@ public class ClaimedChunks
 		chunk.setLoaded(false);
 		return true;
 	}
+
 }

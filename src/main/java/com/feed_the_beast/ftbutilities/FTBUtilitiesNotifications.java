@@ -53,18 +53,25 @@ public class FTBUtilitiesNotifications
 
 			if (team != null)
 			{
-				Notification notification = Notification.of(CHUNK_CHANGED, team.getTitle());
+				if(!ClaimedChunks.canPlayerEnter(player, pos)) {
+					Notification.of(CHUNK_CHANGED, StringUtils.color(FTBUtilities.lang(player, "ftbutilities.lang.chunks.entrydenied", team.getTitle()), TextFormatting.DARK_RED)).send(player.server, player);
+				} else {
+					Notification notification = Notification.of(CHUNK_CHANGED, team.getTitle());
 
-				if (!team.getDesc().isEmpty())
-				{
-					notification.addLine(StringUtils.italic(new TextComponentString(team.getDesc()), true));
+					if (!team.getDesc().isEmpty())
+					{
+						notification.addLine(StringUtils.italic(new TextComponentString(team.getDesc()), true));
+					}
+					player.getEntityData().setShort(FTBUtilitiesPlayerData.TAG_ENTRY_DENIED, (short) 0);
+					notification.send(player.server, player);
 				}
-
-				notification.send(player.server, player);
 			}
 			else
 			{
-				Notification.of(CHUNK_CHANGED, StringUtils.color(FTBUtilities.lang(player, "ftbutilities.lang.chunks.wilderness"), TextFormatting.DARK_GREEN)).send(player.server, player);
+				//If we update the players position it will re-trigger this event, causing the entry message to be replace by this one. Need a buffer or something to prevent that
+				if(teamID == 0 && player.getEntityData().getShort(FTBUtilitiesPlayerData.TAG_ENTRY_DENIED) == 0) {
+					Notification.of(CHUNK_CHANGED, StringUtils.color(FTBUtilities.lang(player, "ftbutilities.lang.chunks.wilderness"), TextFormatting.DARK_GREEN)).send(player.server, player);
+				}
 			}
 		}
 	}

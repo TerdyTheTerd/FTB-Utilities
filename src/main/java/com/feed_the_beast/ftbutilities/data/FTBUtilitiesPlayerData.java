@@ -41,6 +41,7 @@ public class FTBUtilitiesPlayerData extends PlayerData
 	public static final String TAG_FLY = "fly";
 	public static final String TAG_MUTED = "muted";
 	public static final String TAG_LAST_CHUNK = "ftbu_lchunk";
+	public static final String TAG_ENTRY_DENIED = "denied";
 
 	public enum Timer
 	{

@@ -128,6 +128,9 @@ team_config.ftbutilities.attack_entities=Required Level for Attacking Entities
 team_config.ftbutilities.use_items=Required Level for Using Items
 team_config.ftbutilities.explosions=Enable Explosions in Claimed Chunks
 team_config.ftbutilities.fake_players=Allow Fake Players to Interact With Blocks
+team_config.ftbutilities.can_enter=Allow players to enter Claimed Chunks
+team_config.ftbutilities.drop_items=Required level for dropping items in Claimed Chunks
+team_config.ftbutilities.pickup_items=Required level for picking up items in Claimed Chunks
 
 # Action Buttons
 sidebar_button.ftbutilities.chats=Chats
@@ -202,6 +205,7 @@ ftbutilities.lang.chunks.claimed_count=Claimed Chunks: %d / %s
 ftbutilities.lang.chunks.loaded_count=Loaded Chunks: %d / %s
 ftbutilities.lang.chunks.claimed_area=Claimed Area
 ftbutilities.lang.chunks.wilderness=Wilderness
+ftbutilities.lang.chunks.entrydenied=Must be an ally to enter
 
 # Chunk Types
 ftbutilities.lang.chunks.upgrade.loaded=Chunkloaded

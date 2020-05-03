@@ -11,6 +11,7 @@ import com.feed_the_beast.ftblib.lib.math.ChunkDimPos;
 import com.feed_the_beast.ftblib.lib.util.InvUtils;
 import com.feed_the_beast.ftblib.lib.util.ServerUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
+import com.feed_the_beast.ftblib.lib.util.text_components.Notification;
 import com.feed_the_beast.ftbutilities.FTBUtilities;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesConfig;
 import com.feed_the_beast.ftbutilities.FTBUtilitiesNotifications;
@@ -19,25 +20,33 @@ import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesPlayerData;
 import com.feed_the_beast.ftbutilities.data.FTBUtilitiesUniverseData;
 import com.feed_the_beast.ftbutilities.net.MessageUpdateTabName;
+import com.sun.media.jfxmedia.events.PlayerTimeListener;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.EntityEvent.EnteringChunk;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.server.permission.PermissionAPI;
 
@@ -56,6 +65,7 @@ public class FTBUtilitiesPlayerEventHandler
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void onPlayerLoggedIn(ForgePlayerLoggedInEvent event)
 	{
+		//TODO - CHeck their coords in case they log into a claimed chunk
 		EntityPlayerMP player = event.getPlayer().getPlayer();
 
 		if (ServerUtils.isFirstLogin(player, "ftbutilities_starting_items"))
@@ -145,9 +155,25 @@ public class FTBUtilitiesPlayerEventHandler
 		{
 			return;
 		}
-
+		if(!ClaimedChunks.canPlayerEnter((EntityPlayerMP) event.getEntity(), new ChunkDimPos(event.getNewChunkX(), event.getNewChunkZ(), player.dimension))) {
+			double newX = event.getEntity().getPosition().getX(), newZ = event.getEntity().getPosition().getZ();
+			if(event.getOldChunkX() < event.getNewChunkX()) {
+				newX -= 1;
+			} else if(event.getOldChunkX() > event.getNewChunkX()) {
+				newX += 1;
+			}
+			if(event.getOldChunkZ() < event.getNewChunkZ()) {
+				newZ -= 1;
+			} else if(event.getOldChunkZ() > event.getNewChunkZ()) {
+				newZ += 1;
+			}
+			event.getEntity().setPositionAndUpdate(newX, event.getEntity().lastTickPosY, newZ);
+			player.getEntityData().setShort(FTBUtilitiesPlayerData.TAG_ENTRY_DENIED,  (short) 1);
+			FTBUtilitiesNotifications.updateChunkMessage(player, new ChunkDimPos(event.getNewChunkX(), event.getNewChunkZ(), player.dimension));
+		} else {
+			FTBUtilitiesNotifications.updateChunkMessage(player, new ChunkDimPos(event.getNewChunkX(), event.getNewChunkZ(), player.dimension));
+		}
 		FTBUtilitiesPlayerData.get(p).setLastSafePos(new BlockDimPos(player));
-		FTBUtilitiesNotifications.updateChunkMessage(player, new ChunkDimPos(event.getNewChunkX(), event.getNewChunkZ(), player.dimension));
 	}
 
 	@SubscribeEvent
@@ -242,12 +268,6 @@ public class FTBUtilitiesPlayerEventHandler
 		}
 	}
 
-    /*
-	@SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onItemPickup(EntityItemPickupEvent event)
-    {
-    }
-    */
 
 	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void onNameFormat(PlayerEvent.NameFormat event)
@@ -336,4 +356,49 @@ public class FTBUtilitiesPlayerEventHandler
 			FTBUtilitiesUniverseData.worldLog(String.format("%s clicked %s in air at %s in %s", player.getName(), event.getItemStack().getItem().getRegistryName(), getPos(event.getPos()), getDim(player)));
 		}
 	}
+	
+	@SubscribeEvent(priority = EventPriority.HIGH)
+	public static void onItemPickup(EntityItemPickupEvent event) {
+		//TODO - Implement
+		if(!ClaimedChunks.canPlayerPickupItems(event.getEntityPlayer(), new ChunkDimPos(event.getEntityPlayer().getPosition().getX(), event.getEntityPlayer().getPosition().getZ(), event.getEntityPlayer().dimension)))
+		{
+			event.setCanceled(true);
+		}
+	}
+	
+	@SubscribeEvent(priority = EventPriority.HIGH)
+	public static void onItemToss(ItemTossEvent event) {
+		//TODO - Implement
+		if(!ClaimedChunks.canPlayerDropItems(event.getPlayer(), new ChunkDimPos(event.getPlayer().getPosition().getX(), event.getPlayer().getPosition().getZ(), event.getPlayer().dimension))) {
+			event.setCanceled(true);
+		}
+	}
+	
+	//Handle all laser events, check and cancel the explosion, damage, and remove the projectile
+	@SubscribeEvent
+	public void onLaserEvent(ic2.api.event.LaserEvent event) {
+		if(event instanceof ic2.api.event.LaserEvent.LaserShootEvent) {
+			if(ClaimedChunks.blockLaserUse((EntityPlayer) event.owner, event.owner.getPosition())) {
+				event.setCanceled(true);
+			}
+		} else {
+			if(ClaimedChunks.blockLaserUse((EntityPlayer) event.owner, event.lasershot.getPosition())) {
+				event.setCanceled(true);
+			}
+		}
+	}
+	
+	//This might not be neccesary, however im sure we need to handle the radation system
+	@SubscribeEvent
+	public void onExplosionEvent(ic2.api.event.ExplosionEvent event) {
+			if(ClaimedChunks.blockExplosives((EntityPlayer) event.igniter, new ChunkDimPos(event.entity.getPosition(), event.igniter.dimension))) {
+				event.setCanceled(true);
+			}
+	}
+	
+	
+	//TODO - Check on teleport for entering claimed land, in the case of homes or tp's
+	
+	//TODO - Check player commands to block any teleport commands within a claim such as /home, /sethome, /tpa etc.
+	
 }

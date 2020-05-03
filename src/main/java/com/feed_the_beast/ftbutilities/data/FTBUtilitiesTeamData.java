@@ -159,6 +159,9 @@ public class FTBUtilitiesTeamData extends TeamData
 	private EnumTeamStatus attackEntities = EnumTeamStatus.ALLY;
 	private EnumTeamStatus useItems = EnumTeamStatus.ALLY;
 	private boolean explosions = false;
+	private EnumTeamStatus entry = EnumTeamStatus.ALLY;
+	private EnumTeamStatus dropItems = EnumTeamStatus.ALLY;
+	private EnumTeamStatus pickupItems = EnumTeamStatus.ALLY;
 	public boolean canForceChunks = false;
 	private int cachedMaxClaimChunks, cachedMaxChunkloaderChunks;
 
@@ -182,6 +185,9 @@ public class FTBUtilitiesTeamData extends TeamData
 		nbt.setString("InteractWithBlocks", interactWithBlocks.getName());
 		nbt.setString("AttackEntities", attackEntities.getName());
 		nbt.setString("UseItems", useItems.getName());
+		nbt.setString("Entry", entry.getName());
+		nbt.setString("DropItems", dropItems.getName());
+		nbt.setString("PickupItems", pickupItems.getName());
 		return nbt;
 	}
 
@@ -193,6 +199,9 @@ public class FTBUtilitiesTeamData extends TeamData
 		interactWithBlocks = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("InteractWithBlocks"));
 		attackEntities = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("AttackEntities"));
 		useItems = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("UseItems"));
+		entry = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("Entry"));
+		dropItems = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("DropItems"));
+		pickupItems = EnumTeamStatus.NAME_MAP_PERMS.get(nbt.getString("PickupItems"));
 
 		if (ClaimedChunks.isActive() && nbt.hasKey("ClaimedChunks"))
 		{
@@ -225,6 +234,9 @@ public class FTBUtilitiesTeamData extends TeamData
 		group.addEnum("blocks_interact", () -> interactWithBlocks, v -> interactWithBlocks = v, EnumTeamStatus.NAME_MAP_PERMS);
 		group.addEnum("attack_entities", () -> attackEntities, v -> attackEntities = v, EnumTeamStatus.NAME_MAP_PERMS);
 		group.addEnum("use_items", () -> useItems, v -> useItems = v, EnumTeamStatus.NAME_MAP_PERMS);
+		group.addEnum("can_enter", () -> entry, v -> entry = v, EnumTeamStatus.NAME_MAP_PERMS);
+		group.addEnum("drop_items", () -> dropItems, v -> dropItems = v, EnumTeamStatus.NAME_MAP_PERMS);
+		group.addEnum("pickup_items", () -> pickupItems, v -> pickupItems = v, EnumTeamStatus.NAME_MAP_PERMS);
 	}
 
 	public EnumTeamStatus getEditBlocksStatus()
@@ -245,6 +257,19 @@ public class FTBUtilitiesTeamData extends TeamData
 	public EnumTeamStatus getUseItemsStatus()
 	{
 		return useItems;
+	}
+	
+	public EnumTeamStatus getEntryStatus()
+	{
+		return entry;
+	}
+	
+	public EnumTeamStatus getPickupItemStatus() {
+		return pickupItems;
+	}
+	
+	public EnumTeamStatus getDropItemStatus() {
+		return dropItems;
 	}
 
 	public boolean hasExplosions()
